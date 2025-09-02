@@ -1,0 +1,68 @@
+{
+  "name": "inspmail",
+  "version": "1.0.0",
+  "description": "Full-stack email analysis system with IMAP monitoring and header analysis",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run start:dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "start": "npm run start:backend && npm run start:frontend",
+    "start:backend": "cd backend && npm run start:prod",
+    "start:frontend": "cd frontend && npm run start",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "clean": "npm run clean:backend && npm run clean:frontend",
+    "clean:backend": "cd backend && rm -rf dist node_modules",
+    "clean:frontend": "cd frontend && rm -rf .next node_modules",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && npm run test",
+    "test:frontend": "cd frontend && npm run test",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint:backend": "cd backend && npm run lint",
+    "lint:frontend": "cd frontend && npm run lint",
+    "format": "npm run format:backend && npm run format:frontend",
+    "format:backend": "cd backend && npm run format",
+    "format:frontend": "cd frontend && npm run format",
+    "setup": "npm run setup:backend && npm run setup:frontend",
+    "setup:backend": "cd backend && cp env.example .env && echo 'Backend environment file created. Please edit .env with your configuration.'",
+    "setup:frontend": "cd frontend && cp env.example .env.local && echo 'Frontend environment file created. Please edit .env.local with your configuration.'"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "email",
+    "analysis",
+    "imap",
+    "nestjs",
+    "nextjs",
+    "mongodb",
+    "email-headers",
+    "esp-detection",
+    "receiving-chain"
+  ],
+  "author": "InspMail Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/inspmail.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/inspmail/issues"
+  },
+  "homepage": "https://github.com/your-username/inspmail#readme",
+  "dependencies": {
+    "mongodb": "^6.19.0"
+  }
+}
