@@ -11,7 +11,8 @@ yarn-debug.log*
 yarn-error.log*
 
 # Environment
-
+.env 
+.env*
 
 # OS generated files
 .DS_Store
