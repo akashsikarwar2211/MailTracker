@@ -26,4 +26,8 @@ export class CreateEmailDto {
   @IsOptional()
   @IsDateString()
   receivedAt?: string;
+
+  @IsOptional()
+  @IsString()
+  senderIp?: string;
 }

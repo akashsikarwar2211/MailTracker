@@ -30,7 +30,8 @@
     "format": "npm run format:backend && npm run format:frontend",
     "format:backend": "cd backend && npm run format",
     "format:frontend": "cd frontend && npm run format",
-    "setup": "npm run setup:backend && npm run setup:frontend",
+    "setup": "node setup-env.js",
+    "setup:env": "node setup-env.js",
     "setup:backend": "cd backend && cp env.example .env && echo 'Backend environment file created. Please edit .env with your configuration.'",
     "setup:frontend": "cd frontend && cp env.example .env.local && echo 'Frontend environment file created. Please edit .env.local with your configuration.'"
   },

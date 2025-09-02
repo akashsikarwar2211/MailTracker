@@ -35,5 +35,9 @@ export class EmailResponseDto {
 
   @IsOptional()
   @IsString()
+  senderIp?: string;
+
+  @IsOptional()
+  @IsString()
   errorMessage?: string;
 }

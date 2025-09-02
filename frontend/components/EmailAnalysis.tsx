@@ -8,6 +8,7 @@ interface EmailData {
   to?: string
   timestamp: string
   receivedAt?: string
+  senderIp?: string
   errorMessage?: string
 }
 
@@ -88,6 +89,20 @@ export function EmailAnalysis({ email }: EmailAnalysisProps) {
                 </label>
                 <p className="text-gray-900">
                   {formatDate(email.receivedAt)}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {email.senderIp && (
+            <div className="flex items-start space-x-3">
+              <FileText className="h-5 w-5 text-primary-600 mt-0.5" />
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Sender IP
+                </label>
+                <p className="text-gray-900 font-mono text-sm">
+                  {email.senderIp}
                 </p>
               </div>
             </div>

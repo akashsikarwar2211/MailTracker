@@ -32,6 +32,9 @@ export class Email {
   @Prop({ type: Date, required: false })
   receivedAt?: Date;
 
+  @Prop({ type: String, required: false })
+  senderIp?: string;
+
   @Prop({ type: Boolean, default: false })
   processed: boolean;
 

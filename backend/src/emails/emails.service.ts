@@ -180,6 +180,35 @@ export class EmailsService {
   }
 
   /**
+   * Force refresh by fetching new emails from IMAP
+   */
+  async refreshEmails(): Promise<{
+    message: string;
+    newEmailsCount: number;
+  }> {
+    try {
+      this.logger.log('Starting manual email refresh from IMAP');
+      
+      // Import IMAP service dynamically to avoid circular dependency
+      const { ImapService } = await import('../imap/imap.service');
+      const imapService = new ImapService();
+      
+      // Fetch new emails from IMAP
+      const newEmails = await imapService.fetchEmails();
+      
+      this.logger.log(`Refresh completed. Found ${newEmails.length} new emails`);
+      
+      return {
+        message: 'Email refresh completed successfully',
+        newEmailsCount: newEmails.length,
+      };
+    } catch (error) {
+      this.logger.error('Failed to refresh emails from IMAP:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Map email document to response DTO
    */
   private mapToResponseDto(email: EmailDocument): EmailResponseDto {
@@ -193,6 +222,7 @@ export class EmailsService {
       from: email.from,
       to: email.to,
       receivedAt: email.receivedAt?.toISOString(),
+      senderIp: (email as any).senderIp,
       errorMessage: email.errorMessage,
     };
   }

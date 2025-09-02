@@ -128,4 +128,49 @@ export class EmailsController {
       data: stats,
     };
   }
+
+  /**
+   * POST /emails/refresh
+   * Force refresh by fetching new emails from IMAP
+   */
+  @Post('refresh')
+  async refreshEmails(): Promise<{
+    success: boolean;
+    data: {
+      message: string;
+      newEmailsCount: number;
+    };
+  }> {
+    const result = await this.emailsService.refreshEmails();
+    
+    return {
+      success: true,
+      data: result,
+    };
+  }
+
+  /**
+   * GET /emails/debug/latest-headers
+   * Get raw headers of latest email for debugging
+   */
+  @Get('debug/latest-headers')
+  async getLatestHeaders(): Promise<{
+    success: boolean;
+    data: {
+      rawHeaders: string;
+      senderIp?: string;
+      receivingChain: string[];
+    };
+  }> {
+    const email = await this.emailsService.getLatest();
+    
+    return {
+      success: true,
+      data: {
+        rawHeaders: email.rawHeaders,
+        senderIp: email.senderIp,
+        receivingChain: email.receivingChain,
+      },
+    };
+  }
 }

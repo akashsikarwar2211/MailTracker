@@ -10,6 +10,7 @@ interface EmailData {
   from?: string
   to?: string
   receivedAt?: string
+  senderIp?: string
   errorMessage?: string
 }
 
@@ -32,7 +33,8 @@ interface UseEmailDataReturn {
   stats: Stats | null
   isLoading: boolean
   error: string | null
-  refetch: () => void
+  refetch: () => Promise<void>
+  refetchHistory: () => Promise<void>
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
@@ -44,13 +46,24 @@ export function useEmailData(): UseEmailDataReturn {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchLatestEmail = useCallback(async () => {
+  const fetchLatestEmail = useCallback(async (forceRefresh = false) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/emails/latest`)
+      // Add cache-busting parameter for force refresh
+      const url = forceRefresh 
+        ? `${API_BASE_URL}/emails/latest?t=${Date.now()}`
+        : `${API_BASE_URL}/emails/latest`
+      
+      const response = await fetch(url)
+      
       if (!response.ok) {
+        if (response.status === 404) {
+          setLatestEmail(null)
+          return
+        }
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       const data = await response.json()
+      
       if (data.success) {
         setLatestEmail(data.data)
       }
@@ -62,7 +75,7 @@ export function useEmailData(): UseEmailDataReturn {
 
   const fetchEmailHistory = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/emails/history?page=1&limit=10`)
+      const response = await fetch(`${API_BASE_URL}/emails/history?page=1&limit=25`)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -92,13 +105,13 @@ export function useEmailData(): UseEmailDataReturn {
     }
   }, [])
 
-  const fetchAllData = useCallback(async () => {
+  const fetchAllData = useCallback(async (forceRefresh = false) => {
     setIsLoading(true)
     setError(null)
     
     try {
       await Promise.all([
-        fetchLatestEmail(),
+        fetchLatestEmail(forceRefresh),
         fetchEmailHistory(),
         fetchStats(),
       ])
@@ -109,9 +122,28 @@ export function useEmailData(): UseEmailDataReturn {
     }
   }, [fetchLatestEmail, fetchEmailHistory, fetchStats])
 
-  const refetch = useCallback(() => {
-    fetchAllData()
+  const refetch = useCallback(async () => {
+    try {
+      // First, trigger backend refresh to fetch new emails from IMAP
+      const refreshResponse = await fetch(`${API_BASE_URL}/emails/refresh`, {
+        method: 'POST',
+      });
+      
+      if (!refreshResponse.ok) {
+        console.log('Backend refresh failed, continuing with data fetch');
+      }
+      
+      // Then fetch all data
+      await fetchAllData(true) // Force refresh
+    } catch (error) {
+      console.error('Refetch failed:', error);
+      throw error;
+    }
   }, [fetchAllData])
+
+  const refetchHistory = useCallback(async () => {
+    await fetchEmailHistory() // Refresh only history
+  }, [fetchEmailHistory])
 
   // Initial data fetch
   useEffect(() => {
@@ -134,5 +166,6 @@ export function useEmailData(): UseEmailDataReturn {
     isLoading,
     error,
     refetch,
+    refetchHistory,
   }
 }

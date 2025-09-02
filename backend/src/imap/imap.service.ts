@@ -90,7 +90,7 @@ export class ImapService implements OnModuleInit {
       }
 
       this.logger.log(`📬 Inbox opened. Total messages: ${box.messages.total}`);
-      
+
       // Start monitoring for new emails
       this.startMonitoring();
     });
@@ -140,13 +140,13 @@ export class ImapService implements OnModuleInit {
    */
   private fetchEmails(uids: number[]): void {
     const fetch = this.imap.fetch(uids, {
-      bodies: 'HEADER',
+      bodies: '', // fetch full raw message
       struct: true,
     });
 
     fetch.on('message', (msg, seqno) => {
       let buffer = '';
-      let header = '';
+      let raw = '';
 
       msg.on('body', (stream, info) => {
         stream.on('data', (chunk) => {
@@ -154,13 +154,13 @@ export class ImapService implements OnModuleInit {
         });
 
         stream.on('end', () => {
-          header = buffer;
+          raw = buffer;
         });
       });
 
       msg.once('end', async () => {
         try {
-          await this.processEmailHeader(header);
+          await this.processEmailRaw(raw);
         } catch (error) {
           this.logger.error(`Error processing email ${seqno}:`, error);
         }
@@ -177,18 +177,26 @@ export class ImapService implements OnModuleInit {
   }
 
   /**
-   * Process email header and extract information
+   * Process full raw email and extract information
    */
-  private async processEmailHeader(header: string): Promise<void> {
+  private async processEmailRaw(raw: string): Promise<void> {
     try {
-      // Parse the header using mailparser
-      const parsed = await simpleParser(header);
+      // Parse the full message using mailparser
+      const parsed = await simpleParser(raw);
       
+      // Extract headers as raw text for analysis
+      const header = parsed.headerLines
+        .map(h => `${h.key}: ${h.line?.replace(/^.*?:\s*/, '') || ''}`)
+        .join('\n');
+
       // Extract receiving chain from headers
       const receivingChain = this.extractReceivingChain(header);
       
       // Detect ESP type
       const espType = this.detectEspType(parsed.from?.text || '', header);
+
+      // Extract sender IP address from the earliest Received header
+      const senderIp = this.extractSenderIp(header);
       
       // Create email DTO
       const emailDto: CreateEmailDto = {
@@ -199,12 +207,15 @@ export class ImapService implements OnModuleInit {
         from: parsed.from?.text,
         to: parsed.to?.text,
         receivedAt: parsed.date,
+        senderIp,
       };
 
       // Save to database
       await this.emailsService.create(emailDto);
       
       this.logger.log(`✅ Email processed: ${parsed.subject} from ${espType}`);
+      this.logger.log(`📧 Sender IP: ${senderIp || 'Not found'}`);
+      this.logger.log(`🔗 Receiving chain: ${receivingChain.join(' → ')}`);
     } catch (error) {
       this.logger.error('Error processing email header:', error);
     }
@@ -230,6 +241,87 @@ export class ImapService implements OnModuleInit {
     }
     
     return receivingChain.reverse(); // Reverse to show chronological order
+  }
+
+  /**
+   * Extract sender IP from the earliest Received header
+   */
+  private extractSenderIp(header: string): string | undefined {
+    try {
+      this.logger.debug('Extracting sender IP from headers...');
+      
+      // Split headers and find all Received headers
+      const lines = header.split(/\r?\n/);
+      const receivedHeaders: string[] = [];
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (/^received:/i.test(line)) {
+          // Collect multi-line received headers
+          let fullHeader = line;
+          let j = i + 1;
+          while (j < lines.length && /^\s/.test(lines[j])) {
+            fullHeader += ' ' + lines[j].trim();
+            j++;
+          }
+          receivedHeaders.push(fullHeader);
+          i = j - 1; // Skip processed lines
+        }
+      }
+
+      this.logger.debug(`Found ${receivedHeaders.length} Received headers`);
+
+      if (receivedHeaders.length === 0) {
+        this.logger.debug('No Received headers found');
+        return undefined;
+      }
+
+      // The last Received header is usually closest to the sender
+      const earliest = receivedHeaders[receivedHeaders.length - 1];
+      this.logger.debug(`Analyzing earliest Received header: ${earliest}`);
+
+      // Enhanced IP patterns for various formats
+      const ipPatterns = [
+        // IPv4 in brackets: [192.168.1.1]
+        /\[(\d{1,3}(?:\.\d{1,3}){3})\]/,
+        // IPv4 without brackets: 192.168.1.1
+        /(\b\d{1,3}(?:\.\d{1,3}){3}\b)/,
+        // IPv6 in brackets: [IPv6:2001:db8::1] or [2001:db8::1]
+        /\[(?:IPv6:)?([a-fA-F0-9:]+)\]/,
+        // IPv6 without brackets
+        /(\b[a-fA-F0-9:]+::[a-fA-F0-9:]+\b)/,
+        // Generic IP pattern
+        /(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/
+      ];
+
+      for (const pattern of ipPatterns) {
+        const match = earliest.match(pattern);
+        if (match && match[1]) {
+          const ip = match[1];
+          // Validate IPv4 format
+          if (ip.includes('.')) {
+            const parts = ip.split('.');
+            if (parts.length === 4 && parts.every(part => {
+              const num = parseInt(part, 10);
+              return num >= 0 && num <= 255;
+            })) {
+              this.logger.debug(`Found valid IPv4: ${ip}`);
+              return ip;
+            }
+          } else {
+            // IPv6 or other format
+            this.logger.debug(`Found IP: ${ip}`);
+            return ip;
+          }
+        }
+      }
+
+      this.logger.debug('No valid IP found in Received headers');
+      return undefined;
+    } catch (error) {
+      this.logger.error('Error extracting sender IP:', error);
+      return undefined;
+    }
   }
 
   /**

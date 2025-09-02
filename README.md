@@ -43,39 +43,61 @@ InspMail/
 ```bash
 git clone <your-repo-url>
 cd InspMail
+npm run install:all
 ```
 
-### 2. Backend Setup
+### 2. Environment Configuration
 
 ```bash
-cd backend
-npm install
-cp .env.example .env
-# Edit .env with your configuration
-npm run start:dev
+# Automatically create environment files
+npm run setup:env
+
+# Or manually copy example files
+npm run setup:backend
+npm run setup:frontend
 ```
 
-### 3. Frontend Setup
+### 3. Configure Environment Variables
+
+Edit the created environment files with your actual configuration:
+
+- **Backend**: `backend/.env` - Add your IMAP and MongoDB credentials
+- **Frontend**: `frontend/.env.local` - Configure API URL if needed
+
+### 4. Start Development Servers
 
 ```bash
-cd frontend
-npm install
-cp .env.example .env
-# Edit .env with your backend URL
+# Start both frontend and backend
 npm run dev
+
+# Or start individually
+npm run dev:backend  # Backend on port 3001
+npm run dev:frontend # Frontend on port 3000
 ```
 
-### 4. Database Setup
+### 5. Database Setup
 
-- Create MongoDB database
-- Update connection string in backend `.env`
+- Create MongoDB database (local or Atlas)
+- Update `MONGODB_URI` in `backend/.env`
 
 ## ⚙️ Configuration
 
-### Backend Environment Variables
+### Environment Variables
+
+The application uses environment variables for configuration. Use the setup script to create the necessary files:
+
+```bash
+npm run setup:env
+```
+
+### Backend Environment Variables (`backend/.env`)
 
 ```env
-# Database
+# Server Configuration
+PORT=3001
+FRONTEND_URL=http://localhost:3000
+
+# MongoDB Configuration
 MONGODB_URI=mongodb://localhost:27017/inspmail
 
 # IMAP Configuration
@@ -85,17 +107,32 @@ IMAP_USER=your-email@gmail.com
 IMAP_PASSWORD=your-app-password
 IMAP_TLS=true
 
-# Server
-PORT=3001
-NODE_ENV=development
+# Optional: Advanced Configuration
+# IMAP_FOLDER=INBOX
+# IMAP_CHECK_INTERVAL=30000
+# MAX_RECONNECT_ATTEMPTS=5
 ```
 
-### Frontend Environment Variables
+### Frontend Environment Variables (`frontend/.env.local`)
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:3001
-NEXT_PUBLIC_APP_NAME=InspMail
+# API Configuration
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
+
+# Optional: Additional Configuration
+# NEXT_PUBLIC_APP_NAME=InspMail
+# NEXT_PUBLIC_APP_VERSION=1.0.0
 ```
+
+### Environment File Setup
+
+The project includes example environment files and a setup script:
+
+- `backend/env.example` - Backend environment template
+- `frontend/env.example` - Frontend environment template
+- `setup-env.js` - Automated setup script
+
+**Important**: Never commit `.env` files to version control. They are already included in `.gitignore`.
 
 ## 📡 API Endpoints
 
