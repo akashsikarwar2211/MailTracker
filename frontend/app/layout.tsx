@@ -10,6 +10,10 @@ export const metadata: Metadata = {
   keywords: 'email analysis, IMAP, email headers, ESP detection, receiving chain',
   authors: [{ name: 'InspMail Team' }],
   viewport: 'width=device-width, initial-scale=1',
+  icons: {
+    icon: '/icon.svg',
+    apple: '/apple-icon.svg',
+  },
 }
 
 export default function RootLayout({

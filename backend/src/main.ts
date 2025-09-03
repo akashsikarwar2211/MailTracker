@@ -21,10 +21,11 @@ async function bootstrap() {
   // Global prefix for API routes
   app.setGlobalPrefix('api');
   
-  const port = process.env.PORT || 3001;
-  await app.listen(port);
+  const port = Number(process.env.PORT) || 3001;
+  const host = process.env.HOST || '0.0.0.0';
+  await app.listen(port, host);
   
-  console.log(`🚀 InspMail Backend running on port ${port}`);
+  console.log(`🚀 InspMail Backend running on http://${host}:${port}`);
   console.log(`📧 IMAP monitoring enabled for ${process.env.IMAP_HOST}`);
 }
 

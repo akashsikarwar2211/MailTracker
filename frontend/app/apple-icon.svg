@@ -1,0 +1,18 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="90" cy="90" r="90" fill="#3B82F6"/>
+  
+  <!-- Email envelope -->
+  <rect x="45" y="60" width="90" height="60" rx="8" fill="#FFFFFF" stroke="#1E40AF" stroke-width="3"/>
+  
+  <!-- Email flap -->
+  <path d="M45 75L90 105L135 75" stroke="#1E40AF" stroke-width="3" fill="none"/>
+  
+  <!-- Mail icon in center -->
+  <rect x="70" y="85" width="40" height="25" rx="3" fill="#3B82F6"/>
+  <path d="M70 95L90 105L110 95" stroke="#FFFFFF" stroke-width="2" fill="none"/>
+  
+  <!-- Analysis indicator -->
+  <circle cx="130" cy="70" r="8" fill="#10B981"/>
+  <path d="M126 70L128 72L134 66" stroke="#FFFFFF" stroke-width="2" fill="none"/>
+</svg>

@@ -153,13 +153,9 @@ let EmailsService = EmailsService_1 = class EmailsService {
     async refreshEmails() {
         try {
             this.logger.log('Starting manual email refresh from IMAP');
-            const { ImapService } = await Promise.resolve().then(() => require('../imap/imap.service'));
-            const imapService = new ImapService();
-            const newEmails = await imapService.fetchEmails();
-            this.logger.log(`Refresh completed. Found ${newEmails.length} new emails`);
             return {
-                message: 'Email refresh completed successfully',
-                newEmailsCount: newEmails.length,
+                message: 'IMAP monitoring is active; manual refresh not required',
+                newEmailsCount: 0,
             };
         }
         catch (error) {

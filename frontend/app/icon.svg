@@ -1,0 +1,14 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Email envelope background -->
+  <rect x="4" y="8" width="24" height="16" rx="2" fill="#3B82F6" stroke="#1E40AF" stroke-width="1"/>
+  
+  <!-- Email flap -->
+  <path d="M4 12L16 20L28 12" stroke="#1E40AF" stroke-width="1" fill="none"/>
+  
+  <!-- Mail icon in center -->
+  <rect x="12" y="14" width="8" height="6" rx="1" fill="#FFFFFF"/>
+  <path d="M12 16L16 18L20 16" stroke="#3B82F6" stroke-width="0.5" fill="none"/>
+  
+  <!-- Small dot for analysis indicator -->
+  <circle cx="22" cy="10" r="2" fill="#10B981"/>
+</svg>

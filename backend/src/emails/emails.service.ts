@@ -188,19 +188,11 @@ export class EmailsService {
   }> {
     try {
       this.logger.log('Starting manual email refresh from IMAP');
-      
-      // Import IMAP service dynamically to avoid circular dependency
-      const { ImapService } = await import('../imap/imap.service');
-      const imapService = new ImapService();
-      
-      // Fetch new emails from IMAP
-      const newEmails = await imapService.fetchEmails();
-      
-      this.logger.log(`Refresh completed. Found ${newEmails.length} new emails`);
-      
+      // Manual trigger is not needed; IMAP monitoring runs on a schedule.
+      // Returning 0 indicates no explicit manual fetch was performed.
       return {
-        message: 'Email refresh completed successfully',
-        newEmailsCount: newEmails.length,
+        message: 'IMAP monitoring is active; manual refresh not required',
+        newEmailsCount: 0,
       };
     } catch (error) {
       this.logger.error('Failed to refresh emails from IMAP:', error);

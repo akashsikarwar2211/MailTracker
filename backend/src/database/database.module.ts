@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { MongooseModuleOptions } from '@nestjs/mongoose/dist/interfaces/mongoose-options.interface';
 
 @Module({
   imports: [
     MongooseModule.forRootAsync({
-      useFactory: () => ({
+      useFactory: (): MongooseModuleOptions => ({
         uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/inspmail',
         connectionFactory: (connection) => {
           connection.on('connected', () => {
