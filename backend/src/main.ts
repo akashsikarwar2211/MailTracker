@@ -5,10 +5,35 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-  // Enable CORS for frontend communication
+  // Enable CORS for frontend communication (allow Vercel and localhost)
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: (origin, callback) => {
+      const allowList: (string | RegExp)[] = [
+        process.env.FRONTEND_URL || 'http://localhost:3000',
+        'https://mail-tracker-frontend-2mk4.vercel.app',
+        /\.vercel\.app$/,
+      ];
+
+      if (!origin) {
+        // Allow non-browser or same-origin requests
+        return callback(null, true);
+      }
+
+      const allowed = allowList.some((allowedOrigin) =>
+        typeof allowedOrigin === 'string'
+          ? origin === allowedOrigin
+          : allowedOrigin.test(origin)
+      );
+
+      if (allowed) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type,Authorization',
   });
   
   // Global validation pipe

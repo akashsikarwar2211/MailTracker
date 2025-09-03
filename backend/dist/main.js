@@ -6,8 +6,28 @@ const app_module_1 = require("./app.module");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.enableCors({
-        origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+        origin: (origin, callback) => {
+            const allowList = [
+                process.env.FRONTEND_URL || 'http://localhost:3000',
+                'https://mail-tracker-frontend-2mk4.vercel.app',
+                /\.vercel\.app$/,
+            ];
+            if (!origin) {
+                return callback(null, true);
+            }
+            const allowed = allowList.some((allowedOrigin) => typeof allowedOrigin === 'string'
+                ? origin === allowedOrigin
+                : allowedOrigin.test(origin));
+            if (allowed) {
+                callback(null, true);
+            }
+            else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
         credentials: true,
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+        allowedHeaders: 'Content-Type,Authorization',
     });
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,
